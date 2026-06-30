@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐸 哥布林模拟器</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:linear-gradient(180deg,#0d1a0d,#1a2a1a,#0d1a0d);
+  min-height:100vh;display:flex;justify-content:center;align-items:center;
+  font-family:'Segoe UI','PingFang SC',sans-serif;padding:16px;
+  overflow-x:hidden;
+}
+.container{
+  max-width:560px;width:100%;background:rgba(0,0,0,.4);
+  border:2px solid rgba(80,60,30,.3);border-radius:20px;
+  padding:24px;box-shadow:0 0 60px rgba(0,0,0,.5);
+}
+/* 顶部 */
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+h1{color:#8fbc5a;font-size:22px;font-weight:700;text-shadow:0 0 20px rgba(100,150,50,.15);letter-spacing:1px;}
+.resources{display:flex;gap:16px;}
+.resource{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:600;}
+.shiny{color:#ffd700;}
+.meat{color:#ff6b6b;}
+
+/* 哥布林洞穴 */
+.cave{
+  background:radial-gradient(ellipse at 50% 80%, #2a1a0a, #0d0d05);
+  border:2px solid rgba(80,60,30,.2);border-radius:14px;
+  height:220px;position:relative;overflow:hidden;margin-bottom:14px;
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding-bottom:20px;
+}
+.cave::before{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:40%;
+  background:linear-gradient(0deg, rgba(50,30,10,.4), transparent);pointer-events:none;
+}
+.cave .goblin-king{
+  font-size:72px;line-height:1;position:relative;z-index:2;
+  transition:all .15s;filter:drop-shadow(0 4px 20px rgba(100,150,50,.2));
+  animation:goblinIdle 3s ease-in-out infinite;
+}
+@keyframes goblinIdle{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.cave .goblin-king:active{transform:scale(.9);}
+.cave .cave-title{
+  color:rgba(255,255,255,.2);font-size:12px;letter-spacing:2px;margin-top:6px;z-index:2;
+}
+.cave .click-effect{
+  position:absolute;pointer-events:none;font-size:24px;
+  animation:floatUp 1s ease-out forwards;z-index:10;
+}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-80px)}}
+.cave .sparkle{
+  position:absolute;width:4px;height:4px;border-radius:50%;
+  background:#ffd700;animation:sparkle 1.5s ease-in-out infinite;pointer-events:none;
+}
+
+/* 消息 */
+.message-box{
+  background:rgba(0,0,0,.3);border:1px solid rgba(80,60,30,.15);
+  border-radius:10px;padding:10px 14px;min-height:44px;margin-bottom:12px;
+  color:rgba(255,255,255,.5);font-size:13px;line-height:1.6;text-align:center;
+  transition:.2s;
+}
+.message-box .highlight{color:#8fbc5a;font-weight:600;}
+.message-box .shiny-text{color:#ffd700;}
+.message-box .bad{color:#ff6b6b;}
+
+/* 行动按钮 */
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.action-btn{
+  padding:12px;border:1px solid rgba(80,60,30,.2);border-radius:10px;
+  background:rgba(255,255,255,.03);color:rgba(255,255,255,.7);
+  cursor:pointer;transition:all .2s;text-align:center;font-size:14px;line-height:1.3;
+}
+.action-btn:hover{border-color:rgba(143,188,90,.3);background:rgba(143,188,90,.06);transform:translateY(-2px);}
+.action-btn:active{transform:scale(.96);}
+.action-btn .action-icon{font-size:22px;display:block;margin-bottom:2px;}
+.action-btn .action-cost{font-size:10px;color:rgba(255,255,255,.25);display:block;margin-top:2px;}
+.action-btn.locked{opacity:.35;cursor:not-allowed;}
+.action-btn.locked:hover{transform:none;border-color:rgba(80,60,30,.2);}
+
+/* 哥布林部队 */
+.tribe{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;min-height:36px;}
+.goblin-unit{
+  width:36px;height:36px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  background:rgba(100,150,50,.08);border:1px solid rgba(100,150,50,.12);
+  animation:goblinSpawn .4s ease;
+  position:relative;cursor:pointer;
+}
+@keyframes goblinSpawn{0%{transform:scale(0) rotate(-90deg)}100%{transform:scale(1) rotate(0)}}
+.goblin-unit:hover{background:rgba(100,150,50,.15);}
+.goblin-unit .goblin-tooltip{
+  display:none;position:absolute;bottom:110%;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.9);color:#fff;font-size:10px;padding:3px 8px;
+  border-radius:4px;white-space:nowrap;z-index:20;pointer-events:none;
+}
+.goblin-unit:hover .goblin-tooltip{display:block;}
+
+/* 进度条 */
+.progress-bar{
+  height:4px;background:rgba(255,255,255,.05);border-radius:4px;margin-bottom:6px;overflow:hidden;
+}
+.progress-bar .fill{
+  height:100%;width:0%;border-radius:4px;
+  background:linear-gradient(90deg,#8fbc5a,#ffd700);transition:width .3s;
+}
+
+/* 弹窗 */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:100;justify-content:center;align-items:center;
+}
+.modal-overlay.show{display:flex;}
+.modal{
+  background:linear-gradient(135deg,#1a2a1a,#0d1a0d);
+  border:2px solid rgba(80,60,30,.3);border-radius:16px;
+  padding:28px;max-width:400px;width:90%;text-align:center;
+}
+.modal h2{color:#ffd700;font-size:22px;margin-bottom:8px;}
+.modal p{color:rgba(255,255,255,.5);font-size:14px;line-height:1.6;margin-bottom:16px;}
+.modal .btn{
+  padding:10px 28px;border:none;border-radius:10px;
+  background:linear-gradient(135deg,#8fbc5a,#6a9a3a);color:#fff;
+  font-size:14px;font-weight:600;cursor:pointer;transition:.2s;
+}
+.modal .btn:hover{transform:scale(1.04);}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🐸 哥布林洞穴</h1>
+    <div class="resources">
+      <div class="resource shiny">✨ <span id="shinyCount">0</span></div>
+      <div class="resource meat">🥩 <span id="meatCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="cave" id="cave" onclick="clickGoblin(event)">
+    <div class="goblin-king" id="goblinKing">🐸</div>
+    <div class="cave-title">👆 点击哥布林王</div>
+  </div>
+
+  <div class="message-box" id="messageBox">🐸 点击哥布林收集闪亮亮！用闪亮亮和肉肉扩张你的部落！</div>
+
+  <div class="actions">
+    <div class="action-btn" onclick="sendRaid()">
+      <span class="action-icon">⚔️</span>
+      打劫村庄
+      <span class="action-cost">消耗 10✨ 获得 20~50✨ 5~15🥩</span>
+    </div>
+    <div class="action-btn" onclick="hunt()">
+      <span class="action-icon">🏹</span>
+      森林狩猎
+      <span class="action-cost">消耗 5✨ 获得 10~25🥩</span>
+    </div>
+    <div class="action-btn" id="recruitBtn" onclick="recruitGoblin()">
+      <span class="action-icon">👶</span>
+      招募哥布林
+      <span class="action-cost" id="recruitCost">需要 30✨ 15🥩 | 当前：0</span>
+    </div>
+    <div class="action-btn" id="upgradeBtn" onclick="upgradeCave()">
+      <span class="action-icon">🛠️</span>
+      升级洞穴
+      <span class="action-cost" id="upgradeCost">Lv.1 → 需要 50✨ 25🥩</span>
+    </div>
+  </div>
+
+  <div class="progress-bar"><div class="fill" id="progressFill"></div></div>
+
+  <div class="tribe" id="tribe"></div>
+</div>
+
+<script>
+// ===== 游戏状态 =====
+let shiny = 10;
+let meat = 5;
+let goblins = [
+  {name:'咕噜', emoji:'🐸'},
+];
+let caveLevel = 1;
+let autoInterval = null;
+let raidCooldown = false;
+let huntCooldown = false;
+let totalClicks = 0;
+let messages = [];
+
+const GOBLIN_NAMES = ['咕噜','嘎布','叽哩','咕咔','啪叽','噜噜','咔咔','叽咕','啪咔','噜咕','嘎嘎','叽噜'];
+const GOBLIN_EMOJIS = ['🐸','🐸','🐸','🐸','🐸','🐸','🐸','🐸'];
+
+// ===== 核心逻辑 =====
+function updateUI() {
+  document.getElementById('shinyCount').textContent = shiny;
+  document.getElementById('meatCount').textContent = meat;
+  renderTribe();
+
+  // 招募按钮
+  const recruitCost = getRecruitCost();
+  const canRecruit = shiny >= recruitCost.shiny && meat >= recruitCost.meat;
+  document.getElementById('recruitBtn').className = 'action-btn' + (canRecruit ? '' : ' locked');
+  document.getElementById('recruitCost').textContent = `需要 ${recruitCost.shiny}✨ ${recruitCost.meat}🥩 | 当前：${goblins.length}`;
+
+  // 升级按钮
+  const upgradeCost = getUpgradeCost();
+  const canUpgrade = shiny >= upgradeCost.shiny && meat >= upgradeCost.meat;
+  document.getElementById('upgradeBtn').className = 'action-btn' + (canUpgrade ? '' : ' locked');
+  document.getElementById('upgradeCost').textContent = `Lv.${caveLevel} → 需要 ${upgradeCost.shiny}✨ ${upgradeCost.meat}🥩`;
+}
+
+function getRecruitCost() {
+  const base = {shiny: 30, meat: 15};
+  const multi = Math.pow(1.4, goblins.length);
+  return {shiny: Math.floor(base.shiny * multi), meat: Math.floor(base.meat * multi)};
+}
+
+function getUpgradeCost() {
+  return {shiny: 50 * caveLevel, meat: 25 * caveLevel};
+}
+
+function setMessage(text, type) {
+  const el = document.getElementById('messageBox');
+  el.innerHTML = text;
+  el.style.animation = 'none';
+  el.offsetHeight;
+  el.style.animation = 'fadeIn .3s';
+}
+
+function addMessage(text) {
+  messages.push(text);
+  if (messages.length > 20) messages.shift();
+}
+
+// ===== 点击哥布林 =====
+function clickGoblin(e) {
+  const earn = 1 + Math.floor(caveLevel * 0.5) + Math.floor(goblins.length * 0.2);
+  shiny += earn;
+  totalClicks++;
+  updateUI();
+
+  // 飘字效果
+  const el = document.createElement('div');
+  el.className = 'click-effect';
+  el.textContent = `+${earn}✨`;
+  el.style.left = (e.clientX - e.target.getBoundingClientRect().left - 20) + 'px';
+  el.style.top = (e.clientY - e.target.getBoundingClientRect().top - 20) + 'px';
+  document.getElementById('cave').appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+
+  // 哥布林反应
+  const king = document.getElementById('goblinKing');
+  king.style.transform = 'scale(.85) rotate(-5deg)';
+  setTimeout(() => {king.style.transform = '';}, 150);
+
+  // 随机消息
+  if (Math.random() < 0.05) {
+    const msgs = ['🐸 咕噜咕噜～','✨ 闪亮亮！','🐸 hehehe~','💎 我的宝贝！','🐸 更多！更多！'];
+    setMessage(msgs[Math.floor(Math.random()*msgs.length)]);
+  }
+}
+
+// ===== 打劫 =====
+function sendRaid() {
+  if (raidCooldown) {setMessage('⏳ 哥布林们还在休息！等一等！'); return;}
+  if (shiny < 10) {setMessage('🐸 不够闪亮亮！需要 10✨！'); return;}
+  shiny -= 10;
+  const rewardShiny = 20 + Math.floor(Math.random() * 31) + caveLevel * 3;
+  const rewardMeat = 5 + Math.floor(Math.random() * 11) + caveLevel * 2;
+  shiny += rewardShiny;
+  meat += rewardMeat;
+  raidCooldown = true;
+  setMessage(`⚔️ 哥布林们打劫归来！获得 <span class="shiny-text">+${rewardShiny}✨</span> <span class="highlight">+${rewardMeat}🥩</span>`);
+  updateUI();
+  document.getElementById('progressFill').style.width = '100%';
+  setTimeout(() => {
+    raidCooldown = false;
+    document.getElementById('progressFill').style.width = '0%';
+  }, 3000 + caveLevel * 500);
+
+  // 随机事件
+  if (Math.random() < 0.15) {
+    setTimeout(() => {
+      const loss = Math.floor(Math.random() * 10) + 2;
+      shiny = Math.max(0, shiny - loss);
+      setMessage(`😱 有个哥布林被冒险者抓了！损失 <span class="bad">-${loss}✨</span>`);
+      updateUI();
+    }, 500);
+  }
+}
+
+// ===== 狩猎 =====
+function hunt() {
+  if (huntCooldown) {setMessage('⏳ 猎人们还没回来！'); return;}
+  if (shiny < 5) {setMessage('🐸 需要 5✨ 买武器！'); return;}
+  shiny -= 5;
+  const reward = 10 + Math.floor(Math.random() * 16) + caveLevel * 2;
+  meat += reward;
+  huntCooldown = true;
+  setMessage(`🏹 狩猎队满载而归！获得 <span class="highlight">+${reward}🥩</span>`);
+  updateUI();
+  setTimeout(() => {huntCooldown = false;}, 2000);
+}
+
+// ===== 招募 =====
+function recruitGoblin() {
+  const cost = getRecruitCost();
+  if (shiny < cost.shiny || meat < cost.meat) {
+    setMessage('🐸 不够资源！再去抢一点！');
+    return;
+  }
+  shiny -= cost.shiny;
+  meat -= cost.meat;
+  const name = GOBLIN_NAMES[goblins.length % GOBLIN_NAMES.length];
+  const emoji = GOBLIN_EMOJIS[Math.floor(Math.random() * GOBLIN_EMOJIS.length)];
+  goblins.push({name, emoji});
+  updateUI();
+  setMessage(`🎉 新哥布林「${name}」加入了部落！你现在有 ${goblins.length} 个哥布林！`);
+
+  // 如果第一次有5个哥布林，开启自动收集
+  if (goblins.length === 5 && !autoInterval) {
+    startAutoCollect();
+  }
+}
+
+function startAutoCollect() {
+  autoInterval = setInterval(() => {
+    const earn = goblins.length * 0.5;
+    shiny += Math.floor(earn);
+    updateUI();
+  }, 3000);
+  setMessage('🐸 部落壮大了！哥布林们开始自动收集闪亮亮！');
+}
+
+// ===== 升级 =====
+function upgradeCave() {
+  const cost = getUpgradeCost();
+  if (shiny < cost.shiny || meat < cost.meat) {
+    setMessage('🐸 不够升级！继续攒！');
+    return;
+  }
+  shiny -= cost.shiny;
+  meat -= cost.meat;
+  caveLevel++;
+  updateUI();
+  setMessage(`🛠️ 洞穴升级到 Lv.${caveLevel}！点击产出 +${Math.floor(caveLevel*0.5)}✨，打劫收益提高！`);
+
+  if (caveLevel === 3) {
+    setTimeout(() => {
+      setMessage('🏆 你的哥布林洞穴已经小有名气了！冒险者们开始绕道走！');
+    }, 1000);
+  }
+  if (caveLevel === 5) {
+    document.getElementById('goblinKing').textContent = '🐲';
+    setTimeout(() => {
+      document.querySelector('.container').style.borderColor = 'rgba(255,215,0,.2)';
+      setMessage('🐲 哥布林王进化成了——哥布林龙王！！！');
+    }, 500);
+  }
+}
+
+// ===== 哥布林渲染 =====
+function renderTribe() {
+  const el = document.getElementById('tribe');
+  el.innerHTML = '';
+  goblins.forEach((g, i) => {
+    const div = document.createElement('div');
+    div.className = 'goblin-unit';
+    div.textContent = g.emoji;
+    div.innerHTML += `<div class="goblin-tooltip">${g.name}</div>`;
+    // 点击单个哥布林有互动
+    div.onclick = () => {
+      const msgs = ['hehe~','咕噜！','✨？','🥩！','嘿嘿嘿'];
+      setMessage(`🐸 ${g.name}：「${msgs[Math.floor(Math.random()*msgs.length)]}」`);
+    };
+    el.appendChild(div);
+    // 新加入动画
+    if (i === goblins.length - 1) {
+      div.style.animation = 'goblinSpawn .5s ease';
+    }
+  });
+}
+
+// ===== 初始化 =====
+updateUI();
+setMessage('🐸 哥布林王需要你！点击它收集闪亮✨，招募更多哥布林！');
+
+// 离线消息提醒
+setInterval(() => {
+  if (goblins.length > 0 && Math.random() < 0.08) {
+    const g = goblins[Math.floor(Math.random() * goblins.length)];
+    const msgs = [
+      `🐸 ${g.name}：「饿饿饿！」`,
+      `🐸 ${g.name}：「闪亮亮～」`,
+      `🐸 洞穴里传来${g.name}的傻笑声`,
+      `🐸 ${g.name}在角落里数闪亮亮`,
+      `🐸 ${g.name}和另一只哥布林打起来了！`,
+      `🐸 ${g.name}正在计划今晚的抢劫`,
+    ];
+    setMessage(msgs[Math.floor(Math.random() * msgs.length)]);
+  }
+}, 8000);
+</script>
+</body>
+</html>
