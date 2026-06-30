@@ -121,7 +121,7 @@ h1{color:#8fbc5a;font-size:20px;font-weight:700;text-shadow:0 0 20px rgba(100,15
       <div style="color:#ff6b6b;font-size:13px">🥩 <span id="mc">5</span></div>
     </div>
   </div>
-  <div class="goal">🏆 目标：收集 <span id="goalDisplay">1000</span> ✨ 制霸全国！</div>
+  <div class="goal">🏆 目标：收集 <span id="goalDisplay">10000</span> ✨ 成为哥布林之神！</div>
 
   <div class="cave" id="cave">
     <div class="gk" id="gk">🐸</div>
@@ -169,7 +169,7 @@ let caveLevel=1, raidCD=false, huntCD=false, autoInt=null;
 let endGame=false, eventActive=false;
 
 const NAMES=['咕噜','嘎布','叽哩','咕咔','啪叽','噜噜','咔咔','叽咕','啪咔','噜咕','嘎嘎','叽噜','噗噗','咔叽','咕噜噜','啵啵','叭叭','嘀嗒','哐当','噼啪'];
-const GOAL=1000;
+const GOAL=10000;
 
 function rnd(a){return a[Math.floor(Math.random()*a.length)];}
 function $(id){return document.getElementById(id);}
@@ -209,21 +209,21 @@ const H = [
 ];
 
 const E = [
-  {icon:'🌊', title:'山洪暴发了！', desc:'一场突如其来的洪水冲走了你放在洞口的一堆破烂。不过你趁机捡到了上游冲下来的闪亮亮！', fx:()=>{shiny+=15;meat=Math.max(0,meat-5);}},
-  {icon:'🦸', title:'冒险者来袭！', desc:'一个自称"勇者"的家伙闯进了洞穴！你殊死搏斗——然后发现他只是迷路了。但他留下了钱包作为赔礼。', fx:()=>{shiny+=20+Math.floor(Math.random()*20);}},
-  {icon:'💀', title:'哥布林杀手！', desc:'一个全副武装的家伙冲了进来！哥布林们四散奔逃！有个倒霉蛋被抓走了！你不得不花钱把他赎回来！', fx:()=>{const l=Math.min(20,Math.floor(Math.random()*20)+5);shiny=Math.max(0,shiny-l);}},
-  {icon:'🧙', title:'流浪法师路过', desc:'一个老法师在洞口歇脚。他看了你一眼，说"有趣"然后留下了几颗闪亮亮。还顺手把你的洞穴变得更丑了。感谢他。', fx:()=>{shiny+=25;}},
-  {icon:'💰', title:'发现了宝藏！', desc:'一个哥布林在挖洞的时候挖到了前朝宝藏！你当场把它充公了！毕竟这是——你的洞穴！', fx:()=>{shiny+=30+Math.floor(Math.random()*30);}},
-  {icon:'🔥', title:'洞穴着火了！', desc:'不知道哪个白痴哥布林在洞里玩火！烧掉了一堆储备粮！你罚他三天不许吃饭——虽然他本来也每天都在偷吃。', fx:()=>{meat=Math.max(0,meat-8);}},
-  {icon:'🎪', title:'马戏团路过', desc:'一个马戏团从洞口经过。哥布林们看呆了。有个哥布林当场学会了杂技——然后摔了个狗啃泥。但观众很开心！', fx:()=>{shiny+=10;meat+=5;}},
-  {icon:'🐉', title:'龙！', desc:'一条龙从天上飞过！哥布林们吓得趴在地上发抖。龙飞走后你发现地上有一片龙鳞——拿去卖应该能换不少闪亮亮！', fx:()=>{shiny+=40;}},
-  {icon:'👻', title:'洞穴闹鬼了！', desc:'半夜传来奇怪的声响！哥布林们吓得挤成一团。第二天发现是只蝙蝠卡在缝隙里了。但这件事成了部落的传说。', fx:()=>{meat+=3;}},
-  {icon:'📦', title:'天降快递', desc:'一个包裹从天而降！打开一看：是一箱闪亮亮！备注写着"给最绿的哥布林"。是你吧？应该是你！', fx:()=>{shiny+=35;}},
-  {icon:'🤺', title:'两个冒险者内斗', desc:'两个冒险者在洞口打起来了！你趁机偷走了他们的行李。他们打完之后发现东西没了，互相指责着离开了。双赢！', fx:()=>{shiny+=25+Math.floor(Math.random()*15);meat+=5;}},
-  {icon:'🧨', title:'哥布林发明家', desc:'有个哥布林自称发明了"炸药"。一声巨响之后，他消失了。但洞壁上多了一个洞——以及隔壁洞穴的闪亮亮滚了进来！', fx:()=>{shiny+=20;}},
-  {icon:'👑', title:'哥布林王の觉醒', desc:'你突然感觉自己充满了力量！原来是中午吃太饱了。但你还是打了个嗝，喷出了一颗闪亮亮——你是怎么吞下去的？！', fx:()=>{shiny+=10;}},
-  {icon:'🏴‍☠️', title:'地精海盗！', desc:'一伙地精海盗从地下河漂了过来！他们以为你是同行，跟你交换了战利品。你拿到的比给出去的多！因为他们不会数数！', fx:()=>{shiny+=20;meat+=8;}},
-  {icon:'🌪️', title:'龙卷风！', desc:'一场龙卷风掠过洞穴！把你的几个闪亮亮卷走了！但风停后你发现地上多了一些不知道从谁家刮来的好东西！', fx:()=>{const l=Math.floor(Math.random()*15)+5;shiny=Math.max(0,shiny-l);const g=Math.floor(Math.random()*20)+10;shiny+=g;}},
+  {icon:'🌊', title:'山洪暴发了！', desc:'一场特大洪水冲垮了半座山！你的洞穴差点没了！但洪水把上游王国的金库冲到了你面前！', fx:()=>{shiny+=200+Math.floor(Math.random()*300);meat=Math.max(0,meat-30);}},
+  {icon:'🦸', title:'冒险者来袭！', desc:'一个自称"屠龙勇者"的家伙闯进洞穴！你正准备逃跑——结果他踩到香蕉皮摔晕了。你把他扒了个精光。', fx:()=>{shiny+=150+Math.floor(Math.random()*200);}},
+  {icon:'💀', title:'哥布林杀手！', desc:'传说中的哥布林杀手来了！部落伤亡惨重！你花了重金重建洞穴，还赔偿了受惊吓的哥布林的精神损失费。', fx:()=>{const l=Math.floor(Math.random()*100)+50;shiny=Math.max(0,shiny-l);meat=Math.max(0,meat-30);}},
+  {icon:'🧙', title:'大法师的馈赠', desc:'一个白胡子法师停在洞口。他说你"骨骼清奇，是万中无一的抢劫奇才"。然后给了你一大袋闪亮亮。你说对对对你说的都对。', fx:()=>{shiny+=300+Math.floor(Math.random()*200);}},
+  {icon:'💰', title:'发现了上古宝藏！', desc:'一个哥布林在挖茅坑的时候挖到了上古龙族宝藏！整个部落狂欢了一整夜！', fx:()=>{shiny+=400+Math.floor(Math.random()*300);}},
+  {icon:'🔥', title:'洞穴大火灾！', desc:'一个白痴哥布林在洞里搞烧烤！整座洞穴烧起来了！储备粮全没了！但你发现烧焦的地面露出了闪亮亮的矿脉！', fx:()=>{meat=Math.max(0,meat-50);shiny+=250+Math.floor(Math.random()*200);}},
+  {icon:'🎪', title:'皇家马戏团路过', desc:'皇家马戏团从洞口经过！哥布林们跟马戏团打了一架——结果两边成了朋友！马戏团送了你们一堆闪亮亮当赔礼！', fx:()=>{shiny+=150+Math.floor(Math.random()*100);meat+=30;}},
+  {icon:'🐉', title:'上古巨龙！', desc:'一条上古巨龙落在洞口！你吓得腿都软了。结果巨龙说它只是来问路的。你指了路，它留下了一堆龙鳞——这可是天价！', fx:()=>{shiny+=500+Math.floor(Math.random()*500);}},
+  {icon:'👻', title:'洞穴大闹鬼！', desc:'半夜洞穴地动山摇！哥布林们以为闹鬼了，吓得全都跑了出去。第二天你发现是隔壁矿工在挖隧道——并且挖穿了你家的金库！', fx:()=>{shiny+=200+Math.floor(Math.random()*150);meat+=20;}},
+  {icon:'📦', title:'天降皇家快递', desc:'一整车物资从天而降！标注"给最伟大的哥布林王"。这不就是你吗！车上装满了闪亮亮和肉干！', fx:()=>{shiny+=300+Math.floor(Math.random()*200);meat+=50;}},
+  {icon:'🤺', title:'骑士团内讧！', desc:'两个骑士团的冒险者在洞口决战！打完两败俱伤双双倒地。你只做了一件事——走过去捡走了他们所有的装备。', fx:()=>{shiny+=250+Math.floor(Math.random()*200);meat+=40;}},
+  {icon:'🧨', title:'哥布林发明家の惊世之作', desc:'天才哥布林发明了"超级炸药"！一声巨响——半边山塌了。他消失了。但露出的矿脉里全是闪亮亮！为了纪念他，你把那个洞命名为"天才の墓"。', fx:()=>{shiny+=350+Math.floor(Math.random()*250);}},
+  {icon:'👑', title:'哥布林王の神秘觉醒', desc:'你做了一个梦。梦里有个声音说：你是天选之哥布林。醒来后发现枕头底下多了500颗闪亮亮。你决定以后多做点梦。', fx:()=>{shiny+=500;}},
+  {icon:'🏴‍☠️', title:'地精海盗大军！', desc:'一伙地精海盗从地下河浩浩荡荡驶来！你准备迎战——结果他们首领说："大哥！是你吗！"原来是你的远房表弟！他们留下了整船的财宝作为见面礼！', fx:()=>{shiny+=400+Math.floor(Math.random()*300);meat+=60;}},
+  {icon:'🌪️', title:'超级龙卷风！', desc:'超级龙卷风席卷了整个区域！你的洞穴被夷为平地！但龙卷风把远处的皇家金库整个卷到了你面前！这就是传说中的因祸得福吗！', fx:()=>{const l=Math.floor(Math.random()*80)+40;shiny=Math.max(0,shiny-l);const g=Math.floor(Math.random()*300)+200;shiny+=g;}},
 ];
 
 const TALK = [
@@ -239,7 +239,7 @@ const TALK = [
 function msg(html){$('msg').innerHTML=html;}
 function updateUI(){
   $('sc').textContent=shiny;$('mc').textContent=meat;
-  $('goalDisplay').textContent=GOAL;
+  $('goalDisplay').textContent='10000';
   const rc=getRC();$('recBtn').className='ab'+(shiny>=rc.s&&meat>=rc.m?'':' lk');
   $('recCost').textContent=`${rc.s}✨ ${rc.m}🥩 | ${goblins.length}只`;
   const uc=getUC();$('upgBtn').className='ab'+(shiny>=uc.s&&meat>=uc.m?'':' lk');
@@ -403,9 +403,9 @@ function showEnd(){
   endGame=true;
   if(autoInt) clearInterval(autoInt);
   const descs=[
-    '你成功收集了 1000 颗闪亮亮！你的哥布林帝国制霸了全国！<br>所有村庄都臣服在你的绿皮统治之下！<br>村民们自发成立了"哥布林保护协会"——怕你再去抢他们。',
-    '1000 颗闪亮亮！你做到了！<br>你的哥布林大军已经无人能挡！<br>连隔壁王国的国王都写信来问：能不能教教他怎么搞钱。',
-    '🐲 哥布林之神诞生了！<br>你用 1000 颗闪亮亮的力量征服了整个世界！<br>从此以后，闪亮亮的流通货币改名为"咕噜币"。',
+    '🐲 10000 颗闪亮亮！！！你做到了！！！<br>你的哥布林帝国从一个小小的洞穴发展成了横跨大陆的超级势力！<br>人类王国集体投降，表示愿意每年进贡闪亮亮换取和平。<br>你被封为"万王之王、闪亮亮之主、哥布林の神"——<br>而你的洞穴，现在挂牌上市了！股票简称：哥布林（代码：GLN）',
+    '👑 10000 颗闪亮亮！你创造了历史！<br>你的哥布林部落已经发展成了一个真正的文明！<br>——当然，这个文明的GDP99%来自抢劫。<br>但谁在乎呢？你现在住在用闪亮亮砌成的城堡里！<br>你的王座是用纯金打造的——虽然你坐着总觉得硌屁股。',
+    '🏆 哥布林之神！！！<br>你用10000颗闪亮亮统一了整个大陆！<br>史书上记载：那个绿皮怪物……哦不，那位伟大的哥布林帝王，<br>从一个潮湿的洞穴开始，最终建立了史上最大的闪亮亮帝国。<br>你的雕像被立在每个村庄的广场上——<br>村民们不是要纪念你，而是在雕像下面埋了陷阱防止你再来抢。',
   ];
   $('endDesc').innerHTML=rnd(descs);
   $('endClicks').textContent=clicks;
