@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧠 精神状态鉴定</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:linear-gradient(135deg,#0f0c29,#1a0a2e,#2d1b4e);
+  min-height:100vh;display:flex;justify-content:center;align-items:center;
+  font-family:'Segoe UI','PingFang SC',sans-serif;padding:20px;
+}
+.container{
+  background:rgba(255,255,255,.03);backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.06);border-radius:20px;
+  padding:32px;max-width:520px;width:100%;
+  box-shadow:0 0 60px rgba(168,85,247,.05);
+}
+h1{
+  color:#fff;font-size:24px;text-align:center;margin-bottom:4px;
+  text-shadow:0 0 30px rgba(255,100,150,.1);letter-spacing:2px;
+}
+.subtitle{
+  text-align:center;color:rgba(255,255,255,.25);font-size:13px;margin-bottom:24px;
+}
+.progress{
+  height:4px;background:rgba(255,255,255,.06);border-radius:4px;margin-bottom:6px;overflow:hidden;
+}
+.progress .bar{height:100%;width:0%;border-radius:4px;background:linear-gradient(90deg,#a855f7,#ff6b9d,#f5a623);transition:width .4s;}
+.progress-text{text-align:right;color:rgba(255,255,255,.2);font-size:11px;margin-bottom:24px;}
+
+.question-area{animation:fadeIn .4s;min-height:280px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.q-number{color:rgba(168,85,247,.5);font-size:12px;letter-spacing:2px;margin-bottom:8px;}
+.q-text{
+  color:#fff;font-size:19px;font-weight:600;line-height:1.6;margin-bottom:20px;min-height:60px;
+}
+.options{display:flex;flex-direction:column;gap:10px;}
+.option{
+  padding:14px 18px;border:1px solid rgba(255,255,255,.08);border-radius:12px;
+  background:rgba(255,255,255,.03);color:rgba(255,255,255,.75);font-size:15px;
+  cursor:pointer;transition:all .25s;text-align:left;line-height:1.4;
+}
+.option:hover{border-color:rgba(168,85,247,.3);background:rgba(168,85,247,.06);transform:translateX(4px);}
+.option:active{transform:scale(.98);}
+.option.selected{border-color:#a855f7;background:rgba(168,85,247,.12);color:#fff;}
+
+/* 结果页 */
+.result-screen{display:none;text-align:center;animation:fadeIn .6s;}
+.result-screen .big-icon{font-size:80px;margin-bottom:12px;animation:bounce 1s ease infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.result-screen .result-badge{
+  display:inline-block;padding:4px 20px;border-radius:20px;
+  font-size:13px;font-weight:600;margin-bottom:12px;letter-spacing:1px;
+}
+.result-screen .result-title{color:#fff;font-size:26px;font-weight:700;margin-bottom:10px;}
+.result-screen .result-desc{color:rgba(255,255,255,.6);font-size:15px;line-height:1.8;margin-bottom:16px;}
+.result-screen .result-tips{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;padding:16px;text-align:left;margin-bottom:20px;
+}
+.result-screen .result-tips li{color:rgba(255,255,255,.4);font-size:13px;line-height:1.8;list-style:none;padding:2px 0;}
+.result-screen .result-tips li::before{content:'💊 ';}
+.btn-restart{
+  padding:12px 36px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;
+  font-size:15px;font-weight:600;cursor:pointer;transition:.2s;
+  box-shadow:0 4px 20px rgba(168,85,247,.2);
+}
+.btn-restart:hover{transform:scale(1.04);}
+.share-link{
+  display:inline-block;margin-top:12px;color:rgba(255,255,255,.2);font-size:12px;cursor:pointer;
+  text-decoration:underline;text-underline-offset:3px;
+}
+.share-link:hover{color:rgba(255,255,255,.4);}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🧠 精神状态鉴定</h1>
+  <p class="subtitle">测测你的脑子现在还正常吗</p>
+
+  <div class="progress"><div class="bar" id="progressBar"></div></div>
+  <div class="progress-text" id="progressText">1 / 10</div>
+
+  <div class="question-area" id="questionArea"></div>
+
+  <div class="result-screen" id="resultScreen">
+    <div class="big-icon" id="rIcon">🤡</div>
+    <div class="result-badge" id="rBadge" style="background:;color:">诊断报告</div>
+    <div class="result-title" id="rTitle">临床确诊</div>
+    <div class="result-desc" id="rDesc">你已无药可救</div>
+    <div class="result-tips" id="rTips"></div>
+    <button class="btn-restart" onclick="restart()">🔄 重新鉴定</button>
+    <div class="share-link" onclick="shareResult()">📋 复制结果去朋友圈社死</div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    q: '早上起床时你的第一个念头是？',
+    opts: [
+      {t:'又是美好的一天！', score:0},
+      {t:'为什么我醒了？为什么？？', score:2},
+      {t:'再睡五分钟……（两小时后）', score:3},
+      {t:'我是谁？我在哪？今天周几？', score:4},
+    ]
+  },
+  {
+    q: '走在路上看到一只猫，你会？',
+    opts: [
+      {t:'喵喵喵！可爱！拍照！', score:0},
+      {t:'上去摸，被抓也无所谓', score:1},
+      {t:'它看我的眼神……它在鄙视我', score:3},
+      {t:'它是不是社畜转世？我们是不是上辈子认识？', score:4},
+    ]
+  },
+  {
+    q: '朋友发消息说"在吗"，你第一反应是？',
+    opts: [
+      {t:'在！怎么了？', score:0},
+      {t:'……装死', score:2},
+      {t:'又要砍一刀？还是借钱？', score:3},
+      {t:'在吗？不在。再见。', score:4},
+    ]
+  },
+  {
+    q: '你觉得自己像哪种食物？',
+    opts: [
+      {t:'米饭 — 平平无奇但不可或缺', score:0},
+      {t:'螺蛳粉 — 爱的人很爱，恨的人很恨', score:2},
+      {t:'方便面 — 看着还行实际快过期了', score:3},
+      {t:'折耳根 — 存在的意义就是折磨别人', score:4},
+    ]
+  },
+  {
+    q: '进电梯后只有你一个人，你会？',
+    opts: [
+      {t:'安静等到达', score:0},
+      {t:'照镜子整理发型', score:1},
+      {t:'尝试在电梯里跳起来漂浮', score:3},
+      {t:'对着摄像头说"今天的午餐是咖喱味の绝望"', score:4},
+    ]
+  },
+  {
+    q: '你的手机相册最多的是？',
+    opts: [
+      {t:'风景照和生活记录', score:0},
+      {t:'各种截图和表情包', score:1},
+      {t:'几百张一模一样的自拍选不出哪张好', score:2},
+      {t:'深夜拍的月亮和不可名状的糊图', score:4},
+    ]
+  },
+  {
+    q: '洗澡的时候你一般在想什么？',
+    opts: [
+      {t:'认真洗澡，啥也没想', score:0},
+      {t:'哼歌或者练习获奖感言', score:1},
+      {t:'和空气吵架，而且吵赢了', score:3},
+      {t:'模拟被采访——"我能走到今天全靠……"', score:4},
+    ]
+  },
+  {
+    q: '深夜12点你突然想吃东西，你会？',
+    opts: [
+      {t:'忍一忍，明天再说', score:0},
+      {t:'煮个泡面，加个蛋', score:1},
+      {t:'点外卖——没有50起送？那就凑到100', score:2},
+      {t:'冰箱里翻出三天前的冷吃炸鸡——好吃！', score:3},
+      {t:'开始做饭：红烧肉、糖醋排骨、四菜一汤', score:4},
+    ]
+  },
+  {
+    q: '有人跟你说"你变了"，你心里在想？',
+    opts: [
+      {t:'是吗？哪里变了？', score:0},
+      {t:'人都是会成长的嘛', score:1},
+      {t:'关你屁事', score:2},
+      {t:'呵，你根本不懂我', score:3},
+      {t:'（开始脑补80集虐恋剧情）是啊，我变了……拜你所赐。', score:4},
+    ]
+  },
+  {
+    q: '你觉得自己上辈子是什么？',
+    opts: [
+      {t:'好人——这辈子继续做好人', score:0},
+      {t:'一只自由自在的鸟', score:1},
+      {t:'一个修仙的，渡劫失败了', score:2},
+      {t:'一颗原子弹——爆炸就是艺术', score:3},
+      {t:'一个因为话太多被贬下凡的话筒', score:4},
+    ]
+  },
+];
+
+const results = [
+  {min:0, max:6,
+    icon:'😇', badge:'正常人类', badgeBg:'rgba(34,197,94,.15)', badgeColor:'#4ade80',
+    title:'恭喜，你是个正常人',
+    desc:'你的精神状态非常稳定，思维清晰，情绪健康。\n说实话，你这样的人在我们这里才是异类。',
+    tips:['建议继续保持，不要被这个世界影响','你的正常是一种稀缺资源','偶尔也可以试试发疯，挺爽的']},
+  {min:7, max:14,
+    icon:'🙂', badge:'轻度抽象', badgeBg:'rgba(234,179,8,.15)', badgeColor:'#facc15',
+    title:'精神状态：还行，但不多',
+    desc:'你偶尔会冒出一些奇怪的想法，但总体还在正常范围内。\n属于"可以正常社交，但朋友会觉得你有点东西"的类型。',
+    tips:['少刷点沙雕视频，虽然在刷了','深夜emo的时候记得吃东西','你离发疯还有一段距离——别急']},
+  {min:15, max:22,
+    icon:'🤪', badge:'中度患者', badgeBg:'rgba(249,115,22,.15)', badgeColor:'#fb923c',
+    title:'你的精神状态值得关注',
+    desc:'你经常在正常和发疯之间反复横跳。\n白天：我是一个情绪稳定的成年人。\n凌晨两点：哈哈哈哈哈呜呜呜哈哈。',
+    tips:['建议少上网，但我知道你不会听的','你的表情包库存已经暴露了你','找一个也能发疯的朋友，互相伤害']},
+  {min:23, max:30,
+    icon:'🤡', badge:'重症监护', badgeBg:'rgba(239,68,68,.15)', badgeColor:'#f87171',
+    title:'确诊：互联网重度污染患者',
+    desc:'你的大脑已经被互联网彻底腌入味了。\n你的梗浓度超标，日常说话自带弹幕。\n在正常人眼里你是个疯子，在疯子眼里你是他们的王。',
+    tips:['不要放弃治疗，虽然已经来不及了','去现实世界走走吧——哦你说你已经在外面了？那没事了','恭喜你，你是我们想要的重点培养对象']},
+  {min:31, max:40,
+    icon:'👽', badge:'已非人类', badgeBg:'rgba(168,85,247,.15)', badgeColor:'#c084fc',
+    title:'你不是人。你是某种更高维度的存在。',
+    desc:'你的精神状态已经超越了人类的认知范畴。\n普通的精神病院已经收容不了你了。\n你可能是从某个抽象次元跌落到地球的外星生物。',
+    tips:['建议去NASA报到，他们需要你这样的人才','不要在公共场合突然笑出声——虽然你控制不了','你的大脑是一个独立的互联网生态圈','🔒 此诊断结果已加密，普通人无法理解']},
+];
+
+let currentQ = 0;
+let scores = [];
+
+function showQuestion(idx) {
+  const q = questions[idx];
+  const area = document.getElementById('questionArea');
+  area.style.animation = 'none';
+  area.offsetHeight;
+  area.style.animation = 'fadeIn .4s';
+
+  let optsHtml = q.opts.map((o, i) =>
+    `<div class="option" onclick="selectOption(${idx},${i})">${o.t}</div>`
+  ).join('');
+
+  area.innerHTML = `
+    <div class="q-number">第 ${idx+1} / ${questions.length} 题</div>
+    <div class="q-text">${q.q}</div>
+    <div class="options">${optsHtml}</div>
+  `;
+
+  document.getElementById('progressBar').style.width = ((idx+1)/questions.length*100)+'%';
+  document.getElementById('progressText').textContent = `${idx+1} / ${questions.length}`;
+}
+
+function selectOption(qIdx, optIdx) {
+  scores[qIdx] = optIdx;
+  const opts = document.querySelectorAll('.option');
+  opts.forEach((el, i) => el.classList.toggle('selected', i === optIdx));
+
+  // 延迟进入下一题
+  setTimeout(() => {
+    if (currentQ < questions.length - 1) {
+      currentQ++;
+      showQuestion(currentQ);
+    } else {
+      showResult();
+    }
+  }, 350);
+}
+
+function showResult() {
+  const total = scores.reduce((sum, s) => sum + s, 0);
+  let r = results[results.length-1];
+  for (const res of results) {
+    if (total >= res.min && total <= res.max) { r = res; break; }
+  }
+
+  document.getElementById('questionArea').style.display = 'none';
+  document.querySelector('.progress').style.display = 'none';
+  document.getElementById('progressText').style.display = 'none';
+
+  document.getElementById('rIcon').textContent = r.icon;
+  document.getElementById('rBadge').textContent = `${r.badge}（得分：${total}）`;
+  document.getElementById('rBadge').style.background = r.badgeBg;
+  document.getElementById('rBadge').style.color = r.badgeColor;
+  document.getElementById('rTitle').textContent = r.title;
+  document.getElementById('rDesc').textContent = r.desc;
+  document.getElementById('rTips').innerHTML = r.tips.map(t => `<li>${t}</li>`).join('');
+
+  document.getElementById('resultScreen').style.display = 'block';
+
+  // 分数高的时候有特殊效果
+  if (total >= 31) {
+    document.querySelector('.container').style.borderColor = 'rgba(168,85,247,.3)';
+    document.querySelector('.container').style.boxShadow = '0 0 80px rgba(168,85,247,.1)';
+  }
+}
+
+function restart() {
+  currentQ = 0;
+  scores = [];
+  document.getElementById('resultScreen').style.display = 'none';
+  document.getElementById('questionArea').style.display = 'block';
+  document.querySelector('.progress').style.display = 'block';
+  document.getElementById('progressText').style.display = 'block';
+  document.querySelector('.container').style.borderColor = '';
+  document.querySelector('.container').style.boxShadow = '';
+  showQuestion(0);
+}
+
+function shareResult() {
+  const total = scores.reduce((sum, s) => sum + s, 0);
+  let r = results[results.length-1];
+  for (const res of results) {
+    if (total >= res.min && total <= res.max) { r = res; break; }
+  }
+  const text = `🧠 我的精神状态鉴定结果：${r.badge}（${total}分）\n${r.title}\n\n来测测你的精神状态 ➔ https://你的网址`;
+  navigator.clipboard.writeText(text).then(() => {
+    alert('📋 已复制到剪贴板，快去朋友圈社死！');
+  }).catch(() => {
+    alert('复制失败，手动复制吧：\n' + text);
+  });
+}
+
+showQuestion(0);
+</script>
+</body>
+</html>
